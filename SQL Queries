@@ -1,0 +1,121 @@
+create database covid;
+use covid;
+
+-- Residents table:
+CREATE TABLE residents (
+  SplId varchar(45)  NOT NULL,
+  Name varchar(45) DEFAULT NULL,
+  Gender varchar(45)  DEFAULT NULL,
+  CovidStatus varchar(45)  DEFAULT NULL,
+  Family_no int  DEFAULT NULL,
+  PRIMARY KEY (SplId)
+);
+
+
+-- Hospitals Table:
+CREATE TABLE hospitals (
+  hosId int NOT NULL,
+  hosName varchar(45) DEFAULT NULL,
+  TotalBeds int DEFAULT NULL,
+  UnoccupiedBeds int DEFAULT NULL,
+  PRIMARY KEY (hosId)
+); 
+
+
+-- Quarantine_center Table:
+CREATE TABLE quarantine_center (
+  Place_id int NOT NULL,
+  PLace_name varchar(45) DEFAULT NULL,
+  PRIMARY KEY (Place_id)
+); 
+
+-- Deaths table:
+CREATE TABLE deaths (
+  splId varchar(45) NOT NULL,
+  DeathDate date DEFAULT NULL,
+  hosId int DEFAULT NULL,
+  Place_Id int DEFAULT NULL,
+  PRIMARY KEY (splId),
+  KEY deathhosp_idx (hosId),
+  KEY deathPlace_idx (Place_Id),
+  CONSTRAINT deathPlace FOREIGN KEY (Place_Id) REFERENCES quarantine_center (Place_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT deathhosp FOREIGN KEY (hosId) REFERENCES hospitals (hosId) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT deaths_ibfk_1 FOREIGN KEY (splId) REFERENCES residents (SplId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Recovered Table:
+CREATE TABLE recovered (
+  SplId varchar(45) NOT NULL,
+  RecovDate date NOT NULL,
+  hosId int DEFAULT NULL,
+  Place_Id int DEFAULT NULL,
+  PRIMARY KEY (splId,RecovDate),
+  KEY recovhosp_idx (hosId),
+  KEY recovPlace_idx (Place_Id),
+  CONSTRAINT recovPlace FOREIGN KEY (Place_Id) REFERENCES quarantine_center (Place_id),
+  CONSTRAINT recovered_ibfk_1 FOREIGN KEY (splId) REFERENCES residents (SplId) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT recovhosp FOREIGN KEY (hosId) REFERENCES hospitals (hosId) ON DELETE CASCADE ON UPDATE CASCADE
+); 
+
+-- Hospitalized Table
+CREATE TABLE hospitalized (
+  splId varchar(45) NOT NULL,
+  hosId int DEFAULT NULL,
+  startDate date NOT NULL,
+  EndDate date DEFAULT NULL,
+  PRIMARY KEY (splId,startDate),
+  KEY hospitalizhosp_idx (hosId),
+  CONSTRAINT hospitalized_ibfk_1 FOREIGN KEY (splId) REFERENCES residents (SplId) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT hospitalizhosp FOREIGN KEY (hosId) REFERENCES hospitals (hosId) ON DELETE CASCADE ON UPDATE CASCADE
+); 
+
+-- Quarantined Table
+CREATE TABLE quarantined (
+  splId varchar(45) NOT NULL,
+  startDate date NOT NULL,
+  endDate date DEFAULT NULL,
+  Place_Id int DEFAULT NULL,
+  PRIMARY KEY (splId,startDate),
+  KEY quarnPlace_idx (Place_Id),
+  CONSTRAINT quarantined_ibfk_1 FOREIGN KEY (splId) REFERENCES residents (SplId) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT quarnPlace FOREIGN KEY (Place_Id) REFERENCES quarantine_center (Place_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+insert into residents values(1, "Yogesh", "male", "positive", 2);
+insert into residents values(2, "Yash", "male", "negative", 3);
+insert into residents values(3, "Anjali", "female", "negative", 5);
+select * from residents;
+
+insert into hospitals values(1, "Government Hosp", 500, 250);
+insert into hospitals values(2, "Jain Hosp", 500, 200);
+insert into hospitals values(3, "Manipal Hosp", 500, 150);
+insert into hospitals values(4, "Forties Hosp", 500, 50);
+select * from hospitals;
+
+insert into quarantine_center values(1, "Bengaluru");
+insert into quarantine_center values(2, "Bengaluru");
+insert into quarantine_center values(3, "Bengaluru");
+select * from quarantine_center;
+
+insert into deaths values(1, "2022/02/07", 3, 2);
+insert into deaths values(3, "2022/02/01", 2, 1);
+select * from deaths;
+
+insert into recovered values(2, "2022/01/25", 1, 3);
+select * from recovered;
+
+insert into hospitalized values(1, 2 , "2022/01/15", "2022/02/07");
+insert into hospitalized values(2, 3 , "2022/01/13", "2022/02/28");
+insert into hospitalized values(3, 1 , "2022/01/15", "2022/02/01");
+select * from hospitalized;
+
+insert into quarantined values(1, "2022/01/15", "2022/02/07", 3);
+insert into quarantined values(2, "2022/01/13", "2022/02/28", 3);
+insert into quarantined values(3, "2022/01/15", "2022/02/01", 3);
+select * from quarantined;
+
+select SplId, name, Gender, Family_no from residents order by SplId;
+
+select hosid, hosname from hospitals order by hosid;
+
+select SplId, Name, Gender from residents where Family_no < 5;
